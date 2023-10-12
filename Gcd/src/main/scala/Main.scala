@@ -107,16 +107,16 @@ class Gcd(N: Int = 8, logN: Int = 3) extends Module {
         lsb := lsb + 1.U
       }
       is("b01".U) {
-        x := 0.U ## x(N - 1, 1)
+        x := x >> 1.U
       }
       is("b10".U) {
-        y := 0.U ## y(N - 1, 1)
+        y := y >> 1.U
       }
       is("b11".U) {
         when(x < y) {
-          y := 0.U ## diff(N - 1, 1)
+          y := diff >> 1.U
         }.otherwise {
-          x := 0.U ## diff(N - 1, 1)
+          x := diff >> 1.U
         }
       }
     }
@@ -144,3 +144,11 @@ object Main extends App {
   println("-------------- Main Starts --------------")
   emitVerilog(new Gcd(), Array("--target-dir", "generated"))
 }
+/*
+  |
+10100 20
+11100 28
+00100 4
+
+ 1000 8
+ */

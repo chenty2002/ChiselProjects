@@ -1,6 +1,5 @@
 import chisel3._
 import chiseltest._
-import firrtl.Utils.True
 import org.scalatest.flatspec.AnyFlatSpec
 
 class GcdTest extends AnyFlatSpec with ChiselScalatestTester {
@@ -11,7 +10,7 @@ class GcdTest extends AnyFlatSpec with ChiselScalatestTester {
       gcd.io.b.poke(24.U)
       gcd.clock.step()
 
-      while(gcd.io.busy.peekInt() == 1)
+      while (gcd.io.busy.peekInt() == 1)
         gcd.clock.step()
 
       gcd.io.o.expect(6.U)
@@ -21,7 +20,7 @@ class GcdTest extends AnyFlatSpec with ChiselScalatestTester {
       gcd.io.b.poke(27.U)
       gcd.clock.step()
 
-      while(gcd.io.busy.peekInt() == 1)
+      while (gcd.io.busy.peekInt() == 1)
         gcd.clock.step()
 
       gcd.io.o.expect(1.U)
@@ -31,7 +30,7 @@ class GcdTest extends AnyFlatSpec with ChiselScalatestTester {
       gcd.io.b.poke(20.U)
       gcd.clock.step()
 
-      while(gcd.io.busy.peekInt() == 1)
+      while (gcd.io.busy.peekInt() == 1)
         gcd.clock.step()
 
       gcd.io.o.expect(20.U)
