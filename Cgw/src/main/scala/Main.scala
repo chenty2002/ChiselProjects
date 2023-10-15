@@ -1,27 +1,28 @@
 import chisel3._
-import Passenger._
-import Side._
+
+object Passenger extends ChiselEnum {
+  val NONE, CABBAGE, GOAT, WOLF = Value
+}
+
+object Side extends ChiselEnum {
+  val LEFT, RIGHT = Value
+}
 
 class Cgw extends Module {
   val io = IO(new Bundle() {
-    val select = Input(Bool())
+    val select = Input(Passenger())
     val safe = Output(Bool())
     val fin = Output(Bool())
   })
+  import Passenger._
+  import Side._
 
-  val select = Wire(io.select)
+  val select = WireDefault(io.select)
 
-  val boat = RegInit(0.U(1.W))
-  val cabbage = RegInit(0.U(1.W))
-  val goat = RegInit(0.U(1.W))
-  val wolf = RegInit(0.U(1.W))
-
-  when(reset.asBool) {
-    boat := LEFT
-    cabbage := LEFT
-    goat := LEFT
-    wolf := LEFT
-  }
+  val boat = RegInit(LEFT)
+  val cabbage = RegInit(LEFT)
+  val goat = RegInit(LEFT)
+  val wolf = RegInit(LEFT)
 
   when(select === CABBAGE && boat === cabbage) {
     cabbage := Mux(cabbage === RIGHT, LEFT, RIGHT)

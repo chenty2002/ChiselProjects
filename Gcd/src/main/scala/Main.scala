@@ -1,7 +1,6 @@
 import chisel3._
 import chisel3.util._
 
-
 class testGcd(N: Int = 8, logN: Int = 3) extends Module {
   val io = IO(new Bundle {
     // val clock = Input(Clock())
@@ -144,11 +143,3 @@ object Main extends App {
   println("-------------- Main Starts --------------")
   emitVerilog(new Gcd(), Array("--target-dir", "generated"))
 }
-/*
-  |
-10100 20
-11100 28
-00100 4
-
- 1000 8
- */

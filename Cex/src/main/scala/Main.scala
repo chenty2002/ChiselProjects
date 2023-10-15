@@ -1,36 +1,37 @@
 import chisel3._
 import chisel3.util._
 
+object State extends ChiselEnum {
+  val State0, State1, State2, State3 = Value
+}
+
 class Cex extends Module {
   val io = IO(new Bundle() {
     val i = Input(Bool())
     val p = Output(Bool())
     val q = Output(Bool())
   })
+  import State._
 
-  val state = RegInit(0.U(2.W))
-
-  when(reset.asBool) {
-    state := 0.U
-  }
+  val state = RegInit(State0)
 
   switch(state) {
-    is(0.U) {
-      state := 1.U
+    is(State0) {
+      state := State1
     }
-    is(1.U) {
-      state := Mux(io.i, 2.U, 0.U)
+    is(State1) {
+      state := Mux(io.i, State2, State0)
     }
-    is(2.U) {
-      state := Mux(io.i, 3.U, 2.U)
+    is(State2) {
+      state := Mux(io.i, State3, State2)
     }
-    is(3.U) {
-      state := 3.U
+    is(State3) {
+      state := State3
     }
   }
 
-  io.p := state === 1.U
-  io.q := state === 2.U
+  io.p := state === State1
+  io.q := state === State2
 }
 
 object Main extends App {
