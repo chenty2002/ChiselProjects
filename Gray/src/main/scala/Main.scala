@@ -12,12 +12,6 @@ class Gray extends Module {
 
   val w = Wire(Bool())
 
-  when(reset.asBool) {
-    p := false.B
-    q := true.B
-    r := false.B
-  }
-
   r := io.z
   q := p
   p := io.i

@@ -25,10 +25,6 @@ class CounterCell extends Module {
 
   io.carry_out := value & io.carry_in
 
-  when(reset.asBool) {
-    value := false.B
-  }
-
   when(value) {
     value := !io.carry_in
   }.otherwise {
