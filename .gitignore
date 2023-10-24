@@ -1,7 +1,7 @@
-*/generated
-*/.idea
-*/test_run_dir
-*/target
-*/.bsp
-*/project
+generated
+.idea
+test_run_dir
+target
+.bsp
+project
 .idea
