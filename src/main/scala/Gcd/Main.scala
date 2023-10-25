@@ -118,7 +118,6 @@ class Gcd(N: Int = 8, logN: Int = 3) extends Module with Formal {
     (xy_lsb.y === 1.U && ((y >> (lsb + 1.U)) << (lsb + 1.U)).asUInt =/= y))
 
   assertNextStepWhen(done, x === o || y === o)
-//  assertNextStepWhen(done, io.a % o === 0.U && io.b % o === 0.U)
 }
 
 object Main extends App {

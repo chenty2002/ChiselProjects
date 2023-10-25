@@ -2,6 +2,7 @@ package Philo
 
 import chisel3._
 import chisel3.util._
+import chiselFv._
 
 import scala.util.Random
 
@@ -9,7 +10,7 @@ object State extends ChiselEnum {
   val THINKING, READING, EATING, HUNGRY = Value
 }
 
-class Philo4 extends Module {
+class Philo4 extends Module with Formal {
   val io = IO(new Bundle() {
     val st0 = Output(State())
     val st1 = Output(State())
@@ -47,6 +48,11 @@ class Philo4 extends Module {
   ph3.io.left := io.st0
   ph3.io.right := io.st2
   ph3.io.init := State.THINKING
+
+  assert(!(ph0.io.out === State.EATING && ph1.io.out === State.EATING))
+  assert(!(ph1.io.out === State.EATING && ph2.io.out === State.EATING))
+  assert(!(ph2.io.out === State.EATING && ph3.io.out === State.EATING))
+  assert(!(ph3.io.out === State.EATING && ph0.io.out === State.EATING))
 }
 
 class Philosopher extends Module {
@@ -90,5 +96,6 @@ class Philosopher extends Module {
 
 object Main extends App {
   println("-------------- Main Starts --------------")
+  Check.bmc(() => new Philo4)
   emitVerilog(new Philosopher(), Array("--target-dir", "generated"))
 }
