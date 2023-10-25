@@ -2,6 +2,7 @@ package Gcd
 
 import chisel3._
 import chisel3.util._
+import chiselFv._
 
 class testGcd(N: Int = 8, logN: Int = 3) extends Module {
   val io = IO(new Bundle {
@@ -32,7 +33,7 @@ class testGcd(N: Int = 8, logN: Int = 3) extends Module {
 }
 
 
-class Gcd(N: Int = 8, logN: Int = 3) extends Module {
+class Gcd(N: Int = 8, logN: Int = 3) extends Module with Formal {
   val io = IO(new Bundle() {
     // val clock = Input(Clock())
     val start = Input(Bool())
@@ -55,46 +56,11 @@ class Gcd(N: Int = 8, logN: Int = 3) extends Module {
   val busy = RegInit(false.B)
   val o = RegInit(0.U(N.W))
 
-  def select(z: UInt, lsb: UInt): UInt = {
-     z(lsb)
-//    val sel = WireDefault(z(7))
-//    switch(lsb) {
-//      is("d0".U(3.W)) {
-//        sel := z(0)
-//      }
-//      is("d1".U(3.W)) {
-//        sel := z(1)
-//      }
-//      is("d2".U(3.W)) {
-//        sel := z(2)
-//      }
-//      is("d3".U(3.W)) {
-//        sel := z(3)
-//      }
-//      is("d4".U(4.W)) {
-//        sel := z(4)
-//      }
-//      is("d5".U(3.W)) {
-//        sel := z(5)
-//      }
-//      is("d6".U(3.W)) {
-//        sel := z(6)
-//      }
-//    }
-//    sel
-  }
+  def select(z: UInt, lsb: UInt): UInt = z(lsb)
 
   xy_lsb.x := select(x, lsb)
   xy_lsb.y := select(y, lsb)
   diff := Mux(x < y, y - x, x - y)
-
-  when(reset.asBool) {
-    busy := false.B
-    x := 0.U(N.W)
-    y := 0.U(N.W)
-    o := 0.U(N.W)
-    lsb := 0.U(logN.W)
-  }
 
   done := ((x === y) || (x === 0.U) || (y === 0.U)) && busy
 
@@ -139,9 +105,24 @@ class Gcd(N: Int = 8, logN: Int = 3) extends Module {
 
   io.busy := busy
   io.o := o
+
+  assertNextStepWhen(load && io.start, busy)
+  assertNextStepWhen(done, !busy)
+
+  assert(!busy || diff === Mux(x > y, x - y, y - x))
+  assert(!busy ||
+    (xy_lsb.x === 0.U && ((x >> (lsb + 1.U)) << (lsb + 1.U)).asUInt === x) ||
+    (xy_lsb.x === 1.U && ((x >> (lsb + 1.U)) << (lsb + 1.U)).asUInt =/= x))
+  assert(!busy ||
+    (xy_lsb.y === 0.U && ((y >> (lsb + 1.U)) << (lsb + 1.U)).asUInt === y) ||
+    (xy_lsb.y === 1.U && ((y >> (lsb + 1.U)) << (lsb + 1.U)).asUInt =/= y))
+
+  assertNextStepWhen(done, x === o || y === o)
+//  assertNextStepWhen(done, io.a % o === 0.U && io.b % o === 0.U)
 }
 
 object Main extends App {
   println("-------------- Main Starts --------------")
+  Check.bmc(() => new Gcd())
   emitVerilog(new Gcd(), Array("--target-dir", "generated"))
 }
