@@ -49,7 +49,9 @@ class Barrel(Width: Int, N: Int) extends Module {
 
   for (i <- 0 until N) {
     val nexti = (i + 1) % Width
-    b(i) := b(nexti)
+    when(valid(r, b)) {
+      b(i) := b(nexti)
+    }
   }
 }
 

@@ -14,6 +14,8 @@ class Main(car_N: Int, level_N: Int) extends Module {
     val r_stop = Input(Vec(car_N, Bool()))
     val random_push = Input(Vec(car_N, UInt(level_N.W)))
     val init = Input(Vec(car_N, UInt(level_logN.W)))
+    val inc = Output(Vec(car_N, Bool()))
+    val dec = Output(Vec(car_N, Bool()))
   })
 
   val stop_next = Wire(Vec(car_N, Bool()))
@@ -45,9 +47,12 @@ class Main(car_N: Int, level_N: Int) extends Module {
   main_control.io.init := init
   stop_next := main_control.io.stop_next
   continue := main_control.io.continue
+
+  io.inc := inc
+  io.dec := dec
 }
 
 object Main extends App {
-  println("-------------- Elevator1_4.Main Starts --------------")
-emitVerilog(new Main(1, 4), Array("--target-dir", "generated"))
+  println("-------------- Elevator_parameterized.Main Starts --------------")
+  emitVerilog(new Main(1, 4), Array("--target-dir", "generated"))
 }
