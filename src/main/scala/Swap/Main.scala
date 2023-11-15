@@ -2,9 +2,9 @@ package Swap
 
 import chisel3._
 import chisel3.stage.ChiselStage
+import chiselFv._
 
-
-class Swap(K: Int, Nm1: Int) extends Module {
+class Swap(K: Int, Nm1: Int) extends Module with Formal {
   val io = IO(new Bundle() {
     val i = Input(UInt(K.W))
     val x = Output(Vec(Nm1+1, UInt(K.W)))

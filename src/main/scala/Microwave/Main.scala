@@ -2,8 +2,9 @@ package Microwave
 
 import chisel3._
 import chisel3.util._
+import chiselFv._
 
-class Microwave extends Module {
+class Microwave extends Module with Formal {
   val io = IO(new Bundle {
     val openDoor = Input(Bool())
     val closeDoor = Input(Bool())
@@ -16,13 +17,6 @@ class Microwave extends Module {
   val Close = RegInit(false.B)
   val Heat = RegInit(false.B)
   val Error = RegInit(false.B)
-
-  when(reset.asBool) {
-    Start := false.B
-    Close := false.B
-    Heat := false.B
-    Error := false.B
-  }
 
   io.heat := Heat
   io.error := Error
@@ -69,9 +63,16 @@ class Microwave extends Module {
       }
     }
   }
+// 0000 - 1001 - 1011 - 1001
+//      |             - 0000
+//      - 0010 - 0000
+//             - 0011 - 0111 - 0110 - 0000
+//                                  - 0010
+  assert(!(Error && Heat))
 }
 
 object Main extends App {
   println("-------------- Main Starts --------------")
+  Check.bmc(() => new Microwave())
   emitVerilog(new  Microwave(), Array("--target-dir", "generated"))
 }

@@ -108,7 +108,6 @@ class Gcd(N: Int = 8, logN: Int = 3) extends Module with Formal {
 
   assertNextStepWhen(load && io.start, busy)
   assertNextStepWhen(done, !busy)
-
   assert(!busy || diff === Mux(x > y, x - y, y - x))
   assert(!busy ||
     (xy_lsb.x === 0.U && ((x >> (lsb + 1.U)) << (lsb + 1.U)).asUInt === x) ||
@@ -116,7 +115,6 @@ class Gcd(N: Int = 8, logN: Int = 3) extends Module with Formal {
   assert(!busy ||
     (xy_lsb.y === 0.U && ((y >> (lsb + 1.U)) << (lsb + 1.U)).asUInt === y) ||
     (xy_lsb.y === 1.U && ((y >> (lsb + 1.U)) << (lsb + 1.U)).asUInt =/= y))
-
   assertNextStepWhen(done, x === o || y === o)
 }
 

@@ -4,7 +4,9 @@ import chisel3._
 
 import scala.math.log
 
-class Main(car_N: Int, level_N: Int) extends Module {
+import chiselFv._
+
+class Main(car_N: Int, level_N: Int) extends Module with Formal {
   val level_logN = log(level_N - 1).toInt + 1
 
   val io = IO(new Bundle() {

@@ -1,6 +1,7 @@
 package Cgw
 
 import chisel3._
+import chiselFv._
 
 object Passenger extends ChiselEnum {
   val NONE, CABBAGE, GOAT, WOLF = Value
@@ -10,7 +11,7 @@ object Side extends ChiselEnum {
   val LEFT, RIGHT = Value
 }
 
-class Cgw extends Module {
+class Cgw extends Module with Formal {
   val io = IO(new Bundle() {
     val select = Input(Passenger())
     val safe = Output(Bool())
@@ -46,5 +47,6 @@ class Cgw extends Module {
 
 object Main extends App {
   println("-------------- Main Starts --------------")
+  Check.bmc(() => new Cgw())
   emitVerilog(new Cgw(), Array("--target-dir", "generated"))
 }

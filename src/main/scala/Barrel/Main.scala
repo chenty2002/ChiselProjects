@@ -5,7 +5,6 @@ import chisel3.stage.ChiselStage
 
 import scala.util.Random
 
-
 class Barrel(Width: Int, N: Int) extends Module {
   val io = IO(new Bundle() {
     val b = Output(Vec(N, UInt(Width.W)))
@@ -18,8 +17,8 @@ class Barrel(Width: Int, N: Int) extends Module {
 
   def valid(bb: Vec[UInt], rr: Vec[UInt]): Bool = {
     val result = WireDefault(true.B)
-    for (indexb <- 0 to Width) {
-      for (indexr <- 0 to Width) {
+    for (indexb <- 0 until N) {
+      for (indexr <- 0 until N) {
         val nextb = (indexb + 1) % Width
         val nextr = (indexr + 1) % Width
         when(bb(indexb) === rr(indexr)) {

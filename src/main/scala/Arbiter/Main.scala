@@ -2,8 +2,9 @@ package Arbiter
 
 import Selection._
 import chisel3._
+import chiselFv._
 
-class Main extends Module {
+class Main extends Module with Formal {
   val io = IO(new Bundle() {
     val ackA = Output(Bool())
     val ackB = Output(Bool())
@@ -41,8 +42,11 @@ class Main extends Module {
   arbiter.io.active := controllerA.io.pass_token ||
     controllerB.io.pass_token ||
     controllerC.io.pass_token
+
+  assert((!io.ackA && !io.ackB) || (!io.ackB && !io.ackC) || (!io.ackA && !io.ackC))
 }
 
 object Main extends App {
+  Check.bmc(() => new Main(), 50)
   emitVerilog(new Main, Array("--target-dir", "generated"))
 }

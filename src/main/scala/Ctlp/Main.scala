@@ -4,13 +4,14 @@ import chisel3.util._
 import chisel3._
 import chisel3.stage.ChiselStage
 import chisel3.util.random.FibonacciLFSR
+import chiselFv._
 
 
 object State extends ChiselEnum {
   val THINKING, READING, EATING, HUNGRY = Value
 }
 
-class Diners extends Module {
+class Diners extends Module with Formal {
   val io = IO(new Bundle() {
     val s0 = Output(State())
     val s1 = Output(State())
@@ -41,6 +42,11 @@ class Diners extends Module {
 
   str.io.starv := io.s0
   io.str := str.io.starving
+  
+  assert(!(ph0.io.out === State.EATING && ph1.io.out === State.EATING))
+  assert(!(ph1.io.out === State.EATING && ph2.io.out === State.EATING))
+  assert(!(ph2.io.out === State.EATING && ph0.io.out === State.EATING))
+  assert(!Seq(ph0, ph1, ph2).map(_.io.out === State.HUNGRY).reduce(_ && _))
 }
 
 class Philosopher extends Module {
@@ -111,6 +117,7 @@ class Starvation extends Module {
 }
 
 object Main extends App {
+  Check.bmc(() => new Diners(), 50)
   (new ChiselStage).emitVerilog(
     new Diners(), Array("--target-dir", "generated")
   )

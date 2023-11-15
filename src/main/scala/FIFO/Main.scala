@@ -1,8 +1,9 @@
 package FIFO
 
 import chisel3._
+import chiselFv._
 
-class CompareFIFOs(MSBD: Int, LAST: Int, MSBA: Int) extends Module {
+class CompareFIFOs(MSBD: Int, LAST: Int, MSBA: Int) extends Module with Formal {
   val io = IO(new Bundle {
     val dataIn = Input(UInt((MSBD+1).W))
     val push = Input(Bool())
@@ -19,8 +20,11 @@ class CompareFIFOs(MSBD: Int, LAST: Int, MSBA: Int) extends Module {
   rb.io.pop := io.pop
 
   io.equal := (sr.io.full === rb.io.full) &&
-    (sr.io.empty && rb.io.empty) &&
+    (sr.io.empty === rb.io.empty) &&
     (sr.io.empty || sr.io.dataOut === rb.io.dataOut)
+  assert(sr.io.full === rb.io.full)
+  assert(sr.io.empty === rb.io.empty)
+  assert(sr.io.empty || sr.io.dataOut === rb.io.dataOut)
 }
 
 class srFIFO(MSBD: Int, LAST: Int, MSBA: Int) extends Module {
@@ -77,10 +81,10 @@ class rbFIFO(MSBD: Int, LAST: Int, MSBA: Int) extends Module {
     head := head + 1.U
     empty := false.B
   }.elsewhen(io.pop && !empty) {
+    tail := tail + 1.U
     when(tail === head) {
       empty := true.B
     }
-    tail := tail + 1.U
   }
   io.dataOut := mem(tail)
   io.full := tail === head && !empty
@@ -88,5 +92,6 @@ class rbFIFO(MSBD: Int, LAST: Int, MSBA: Int) extends Module {
 }
 
 object Main extends App {
+  Check.bmc(() => new CompareFIFOs(3, 15, 3))
   emitVerilog(new CompareFIFOs(3, 15, 3), Array("--target-dir", "generated"))
 }

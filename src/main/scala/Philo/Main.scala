@@ -2,9 +2,8 @@ package Philo
 
 import chisel3._
 import chisel3.util._
+import chisel3.util.random.FibonacciLFSR
 import chiselFv._
-
-import scala.util.Random
 
 object State extends ChiselEnum {
   val THINKING, READING, EATING, HUNGRY = Value
@@ -22,11 +21,6 @@ class Philo4 extends Module with Formal {
   val ph1 = Module(new Philosopher)
   val ph2 = Module(new Philosopher)
   val ph3 = Module(new Philosopher)
-
-  ph0.io.coin := Random.nextBoolean().asBool
-  ph1.io.coin := Random.nextBoolean().asBool
-  ph2.io.coin := Random.nextBoolean().asBool
-  ph3.io.coin := Random.nextBoolean().asBool
 
   io.st0 := ph0.io.out
   io.st1 := ph1.io.out
@@ -53,6 +47,7 @@ class Philo4 extends Module with Formal {
   assert(!(ph1.io.out === State.EATING && ph2.io.out === State.EATING))
   assert(!(ph2.io.out === State.EATING && ph3.io.out === State.EATING))
   assert(!(ph3.io.out === State.EATING && ph0.io.out === State.EATING))
+  assert(!Seq(ph0, ph1, ph2, ph3).map(_.io.out === State.HUNGRY).reduce(_ && _)) // FAIL
 }
 
 class Philosopher extends Module {
@@ -60,15 +55,16 @@ class Philosopher extends Module {
     val left = Input(State())
     val right = Input(State())
     val init = Input(State())
-    val coin = Input(Bool())
     val out = Output(State())
   })
   val left = WireDefault(io.left)
   val right = WireDefault(io.right)
+  val coin = Reg(Bool())
 
   val self = RegInit(io.init)
 
   io.out := self
+  coin := FibonacciLFSR.maxPeriod(8)(0)
 
   switch(self) {
     is(State.READING) {
@@ -77,14 +73,14 @@ class Philosopher extends Module {
       }
     }
     is(State.THINKING) {
-      when(io.coin && right === State.READING) {
+      when(coin && right === State.READING) {
         self := State.READING
       }.otherwise {
-        self := Mux(io.coin, State.THINKING, State.HUNGRY)
+        self := Mux(coin, State.THINKING, State.HUNGRY)
       }
     }
     is(State.EATING) {
-      self := Mux(io.coin, State.THINKING, State.EATING)
+      self := Mux(coin, State.THINKING, State.EATING)
     }
     is(State.HUNGRY) {
       when(left =/= State.EATING && right =/= State.HUNGRY && right =/= State.EATING) {
@@ -96,6 +92,6 @@ class Philosopher extends Module {
 
 object Main extends App {
   println("-------------- Main Starts --------------")
-  Check.bmc(() => new Philo4)
+  Check.bmc(() => new Philo4, 50)
   emitVerilog(new Philosopher(), Array("--target-dir", "generated"))
 }

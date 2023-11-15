@@ -1,8 +1,9 @@
 package Counter
 
 import chisel3._
+import chiselFv._
 
-class Counter extends Module {
+class Counter extends Module with Formal {
   val io = IO(new Bundle() {
     val out = Output(Bool())
   })
@@ -15,6 +16,12 @@ class Counter extends Module {
   bit1.io.carry_in := bit0.io.carry_out
   bit2.io.carry_in := bit1.io.carry_out
   io.out := bit2.io.carry_out
+
+  assertNextStepWhen(io.out, !io.out)
+  for(i <- 2 until 8) {
+    assertAfterNStepWhen(io.out, i, !io.out)
+  }
+  assertAfterNStepWhen(io.out, 8, io.out)
 }
 
 class CounterCell extends Module {
@@ -36,5 +43,6 @@ class CounterCell extends Module {
 
 object Main extends App {
   println("-------------- Main Starts --------------")
+  Check.bmc(() => new Counter(), 50)
   emitVerilog(new Counter(), Array("--target-dir", "generated"))
 }
